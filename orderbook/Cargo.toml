@@ -1,0 +1,12 @@
+[package]
+name = "orderbook"
+version = "0.1.0"
+edition = "2021"
+
+[[example]]
+name = "orderbook"
+path = "src/orderbook.rs"
+
+[dependencies]
+slab = "0.4"       # 核心：预分配的内存池
+rustc-hash = "1.1" # 核心：比默认 SipHash 快 10 倍的哈希算法 (FxHash)
