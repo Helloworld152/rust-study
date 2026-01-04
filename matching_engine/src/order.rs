@@ -1,0 +1,26 @@
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Side {
+    Bid,
+    Ask
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Order {
+    pub id: u64,
+    pub price: u64,
+    pub qty: u64,
+    pub side: Side,
+    pub timestamp: u64
+}
+
+impl Order {
+    pub fn new(id: u64, price: u64, qty: u64, side: Side, timestamp: u64) -> Self {
+        Self {
+            id,
+            price,
+            qty,
+            side,
+            timestamp
+        }
+    }
+}
