@@ -17,6 +17,7 @@ struct OrderNode {
     id: OrderId,
     price: Price,
     qty: f64,
+    is_bid: bool, // 标记是买单还是卖单
     // 链表指针：使用 Option<usize>，None 表示空指针
     next: Option<OrderIndex>,
     prev: Option<OrderIndex>,
@@ -74,6 +75,7 @@ impl OrderBook {
             id,
             price,
             qty,
+            is_bid,
             next: None,
             prev: None,
         });
@@ -118,14 +120,14 @@ impl OrderBook {
 
         // 2. 获取订单信息 (为了知道去哪个价格层删)
         // 注意：先 copy 需要的信息，因为后面要 remove
-        let (price, prev, next) = {
+        let (price, is_bid, prev, next) = {
             let node = &self.arena[idx];
-            (node.price, node.prev, node.next)
+            (node.price, node.is_bid, node.prev, node.next)
         };
         
-        // 这里的逻辑稍微复杂，假设是 Bid (实际代码需要判断方向，这里简化演示)
-        // 在真实系统中，你可以在 OrderNode 里存一个 is_bid 字段
-        let level = self.bids.get_mut(&price).expect("Price level corruption");
+        // 根据订单方向选择对应的 book side
+        let book_side = if is_bid { &mut self.bids } else { &mut self.asks };
+        let level = book_side.get_mut(&price).expect("Price level corruption");
 
         // 3. 链表断链操作 (Unlink)
         // 纯索引操作，无内存释放
@@ -146,7 +148,7 @@ impl OrderBook {
                 level.head = None;
                 level.tail = None;
                 // 可选：如果 Level 空了，从 BTreeMap 移除
-                // self.bids.remove(&price); 
+                book_side.remove(&price);
             }
         }
 
